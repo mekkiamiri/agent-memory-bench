@@ -80,6 +80,18 @@ class ScenarioTest {
     }
 
     @Test
+    void unSetSansValeurEstRefuse() {
+        assertThrows(IllegalArgumentException.class, () -> LecteurScenario.lire("t", """
+                U: Je pars bientôt. {set ville}
+                A: Noté.
+                """));
+        assertThrows(IllegalArgumentException.class, () -> LecteurScenario.lire("t", """
+                U: Je pars bientôt. {set ville=}
+                A: Noté.
+                """));
+    }
+
+    @Test
     void laValeurDoitFigurerDansLeMessage() {
         assertThrows(IllegalArgumentException.class, () -> LecteurScenario.lire("t", """
                 U: Je pars bientôt. {set ville=Lyon}

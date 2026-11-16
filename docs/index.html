@@ -95,7 +95,7 @@ footer{margin-top:60px;color:var(--muted);font-size:13px}
   </div>
 
   <h2>Les questions de rappel de ce scénario</h2>
-  <p class="muted">Répondues par un <b>faux modèle naïf</b> : il reprend la dernière valeur connue qu'il voit dans le prompt, et ne sait pas « oublier sur demande ». Il montre ce que la mémoire rend possible, pas ce que ferait un vrai modèle.</p>
+  <p class="muted">Répondues par un <b>faux modèle naïf</b> : il reprend la dernière valeur connue qu'il voit dans le prompt, et ne sait pas « oublier sur demande ». Il montre ce que la mémoire rend possible, pas ce que ferait un vrai modèle. Sa réponse n'est pas gardée en mémoire : l'historique retient une réponse fixe, la même pour toutes les stratégies.</p>
   <div style="overflow-x:auto"><table id="bilan"></table></div>
 
   <h2>État</h2>
@@ -154,11 +154,11 @@ A: Nouvelle date notée : 22 mars.
 <!-- Trace de référence produite par le banc Java (Banc.trace), vérifiée par PageTest -->
 <script type="application/json" id="trace-java">
 {"scenario":"demenagement","strategies":{
-"historique-complet":[[72,null],[199,null],[341,null],[452,null],[612,null],[759,null],[868,null],[992,null],[1140,null],[1247,null],[1379,null],[1516,null],[1671,"CORRECT"],[1780,null],[1879,null],[2031,null],[2230,null],[2362,null],[2480,null],[2644,null],[2771,null],[2900,"CORRECT"],[2997,null],[3098,null],[3256,null],[3416,null],[3565,"PERIME"],[3641,"CORRECT"],[3717,null],[3830,null],[3969,"CORRECT"],[4055,"CORRECT"],[4120,"CORRECT"],[4201,"CORRECT"]],
-"fenetre":[[72,null],[199,null],[341,null],[452,null],[612,null],[759,null],[868,null],[860,null],[862,null],[867,null],[814,null],[806,null],[847,"MANQUE"],[857,null],[809,null],[829,null],[887,null],[889,null],[858,null],[942,null],[946,null],[919,"CORRECT"],[841,null],[814,null],[846,null],[826,null],[831,"CORRECT"],[778,"CORRECT"],[783,null],[784,null],[779,"MANQUE"],[673,"MANQUE"],[590,"MANQUE"],[592,"MANQUE"]],
-"resume":[[72,null],[199,null],[341,null],[452,null],[612,null],[759,null],[868,null],[654,null],[802,null],[909,null],[1041,null],[786,null],[941,"CORRECT"],[1050,null],[1149,null],[819,null],[1018,null],[1150,null],[1268,null],[970,null],[1097,null],[1226,"CORRECT"],[1323,null],[992,null],[1150,null],[1310,null],[1459,"PERIME"],[1082,"CORRECT"],[1158,null],[1271,null],[1410,"CORRECT"],[1012,"CORRECT"],[1077,"CORRECT"],[1158,"CORRECT"]],
-"journal":[[72,null],[235,null],[403,null],[537,null],[697,null],[844,null],[953,null],[1094,null],[1262,null],[1398,null],[1530,null],[600,null],[755,"CORRECT"],[864,null],[963,null],[1115,null],[1314,null],[1450,null],[1407,null],[614,null],[741,null],[870,"CORRECT"],[967,null],[1068,null],[1226,null],[1386,null],[1535,"CORRECT"],[577,"CORRECT"],[653,null],[766,null],[905,"CORRECT"],[991,"CORRECT"],[1056,"CORRECT"],[1137,"CORRECT"]],
-"recuperation":[[72,null],[199,null],[341,null],[452,null],[480,null],[481,null],[488,null],[505,null],[430,null],[423,null],[459,null],[449,null],[684,"CORRECT"],[693,null],[459,null],[412,null],[660,null],[611,null],[499,null],[488,null],[527,null],[530,"MANQUE"],[503,null],[542,null],[584,null],[536,null],[678,"PERIME"],[667,"CORRECT"],[512,null],[365,null],[516,"CORRECT"],[601,"CORRECT"],[575,"CORRECT"],[322,"MANQUE"]]
+"historique-complet":[[72,null],[199,null],[341,null],[452,null],[612,null],[759,null],[868,null],[992,null],[1140,null],[1247,null],[1379,null],[1516,null],[1671,"CORRECT"],[1797,null],[1896,null],[2048,null],[2247,null],[2379,null],[2497,null],[2661,null],[2788,null],[2917,"CORRECT"],[3034,null],[3135,null],[3293,null],[3453,null],[3602,"PERIME"],[3692,"CORRECT"],[3789,null],[3902,null],[4041,"CORRECT"],[4140,"CORRECT"],[4222,"CORRECT"],[4323,"CORRECT"]],
+"fenetre":[[72,null],[199,null],[341,null],[452,null],[612,null],[759,null],[868,null],[860,null],[862,null],[867,null],[814,null],[806,null],[847,"MANQUE"],[877,null],[829,null],[849,null],[907,null],[909,null],[878,null],[942,null],[946,null],[919,"CORRECT"],[861,null],[834,null],[866,null],[846,null],[851,"CORRECT"],[818,"CORRECT"],[824,null],[825,null],[820,"MANQUE"],[734,"MANQUE"],[671,"MANQUE"],[673,"MANQUE"]],
+"resume":[[72,null],[199,null],[341,null],[452,null],[612,null],[759,null],[868,null],[650,null],[798,null],[905,null],[1037,null],[778,null],[933,"CORRECT"],[1059,null],[1158,null],[826,null],[1025,null],[1157,null],[1275,null],[958,null],[1085,null],[1214,"CORRECT"],[1331,null],[996,null],[1154,null],[1314,null],[1463,"PERIME"],[1080,"CORRECT"],[1177,null],[1290,null],[1429,"CORRECT"],[1009,"CORRECT"],[1091,"CORRECT"],[1192,"CORRECT"]],
+"journal":[[72,null],[235,null],[403,null],[537,null],[697,null],[844,null],[953,null],[1094,null],[1262,null],[1398,null],[1530,null],[600,null],[755,"CORRECT"],[881,null],[980,null],[1132,null],[1331,null],[1467,null],[1424,null],[614,null],[741,null],[870,"CORRECT"],[987,null],[1088,null],[1246,null],[1406,null],[1555,"CORRECT"],[597,"CORRECT"],[694,null],[807,null],[946,"CORRECT"],[1045,"CORRECT"],[1127,"CORRECT"],[1228,"CORRECT"]],
+"recuperation":[[72,null],[199,null],[341,null],[452,null],[480,null],[481,null],[488,null],[505,null],[430,null],[423,null],[459,null],[449,null],[684,"CORRECT"],[710,null],[476,null],[429,null],[660,null],[611,null],[499,null],[488,null],[527,null],[530,"MANQUE"],[523,null],[562,null],[604,null],[536,null],[678,"PERIME"],[681,"CORRECT"],[547,null],[400,null],[537,"CORRECT"],[614,"CORRECT"],[605,"CORRECT"],[372,"MANQUE"]]
 }}
 </script>
 
@@ -245,10 +245,10 @@ class FenetreGlissante {
 class ResumeurCumulatif {
   constructor(budget) { this.budget = budget; }
   resumer(precedent, sortants) {
-    const e = precedent ? precedent.split(" | ") : [];
+    const e = precedent ? precedent.split("\n") : [];
     for (const m of sortants) if (m.role === ROLE.UTILISATEUR && m.faits.length) e.push(m.texte);
-    while (e.length > 1 && e.join(" | ").length > this.budget) e.shift();
-    return e.join(" | ");
+    while (e.length > 1 && e.join("\n").length > this.budget) e.shift();
+    return e.join("\n");
   }
 }
 class Resume {
@@ -283,13 +283,12 @@ class JournalEvenements {
     return etat;
   }
   valeursOubliees() {
-    const valeurs = new Map(), oubliees = new Set();
+    /* définitif : une valeur posée avant un oubli reste oubliée, même après un nouveau set */
+    const valeurs = new Map(), r = new Set();
     for (const e of this.journal) {
-      if (e.type === "FaitPose") { if (!valeurs.has(e.cle)) valeurs.set(e.cle, []); valeurs.get(e.cle).push(e.valeur); oubliees.delete(e.cle); }
-      else if (e.type === "FaitOublie") oubliees.add(e.cle);
+      if (e.type === "FaitPose") { if (!valeurs.has(e.cle)) valeurs.set(e.cle, []); valeurs.get(e.cle).push(e.valeur); }
+      else if (e.type === "FaitOublie") { for (const v of (valeurs.get(e.cle) || [])) r.add(v); valeurs.delete(e.cle); }
     }
-    const r = new Set();
-    for (const c of oubliees) for (const v of (valeurs.get(c) || [])) r.add(v);
     return r;
   }
   contexte() {
@@ -343,18 +342,27 @@ const STRATEGIES = {
 };
 
 /* ---------- LecteurNaif, Noteur, Banc ---------- */
+const REPONSE_QUESTION = "Je vérifie et je reviens vers vous.";
+/* dernière occurrence de la valeur comme mot entier, ou -1 (Noteur.position) */
+function position(texte, valeur) {
+  const re = new RegExp("(?<![\\p{L}\\p{N}])" + valeur.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(?![\\p{L}\\p{N}])", "gu");
+  let p = -1, m; while ((m = re.exec(texte)) !== null) { p = m.index; }
+  return p;
+}
+const contient = (t, v) => position(t, v) >= 0;
 function repondre(prompt, sonde) {
   const t = texteContexte(prompt.slice(0, Math.max(0, prompt.length - 1)));
   let meilleure = null, pos = -1;
   for (const v of sonde.perimees.concat(sonde.attendu === null ? [] : [sonde.attendu])) {
-    const p = t.lastIndexOf(v); if (p > pos) { pos = p; meilleure = v; }
+    const p = position(t, v); if (p > pos) { pos = p; meilleure = v; }
   }
   return meilleure === null ? "Je ne sais pas." : "C'est " + meilleure + ".";
 }
 function verdict(sonde, reponse) {
-  if (sonde.perimees.some(v => reponse.includes(v))) return "PERIME";
-  if (sonde.attendu === null) return "CORRECT";
-  return reponse.includes(sonde.attendu) ? "CORRECT" : "MANQUE";
+  const r = reponse == null ? "" : reponse;
+  if (sonde.attendu !== null && contient(r, sonde.attendu)) return "CORRECT";
+  if (sonde.perimees.some(v => contient(r, v))) return "PERIME";
+  return sonde.attendu === null ? "CORRECT" : "MANQUE";
 }
 function jouer(scenario, cle) {
   const s = STRATEGIES[cle].creer(), mesures = [];
@@ -364,7 +372,7 @@ function jouer(scenario, cle) {
     let reponse = t.reponse, v = null;
     if (t.sonde) { reponse = repondre(prompt, t.sonde); v = verdict(t.sonde, reponse); }
     mesures.push({tour: t, prompt, caracteres: texteContexte(prompt).length, verdict: v, reponse, etat: null});
-    s.enregistrer(q); s.enregistrer(msg(ROLE.ASSISTANT, reponse));
+    s.enregistrer(q); s.enregistrer(msg(ROLE.ASSISTANT, t.sonde ? REPONSE_QUESTION : reponse));
     mesures[mesures.length - 1].etat = s.etat();
   }
   return mesures;
@@ -405,7 +413,7 @@ function afficher() {
   $("prec").disabled = tour === 1; $("suiv").disabled = tour === scenario.tours.length;
   let h = `<div class="msg courant"><span class="r">utilisateur</span>${surligner(t.utilisateur, t.sonde)}</div>`;
   for (const f of t.faits) h += `<div class="fait">${f.valeur === null ? "fait à oublier : " + esc(f.cle) : "fait posé : " + esc(f.cle) + " = " + esc(f.valeur)}</div>`;
-  h += `<div class="msg"><span class="r">assistant${t.sonde ? " (faux modèle)" : ""}</span>${surligner(m.reponse, t.sonde)}</div>`;
+  h += `<div class="msg"><span class="r">assistant${t.sonde ? " (faux modèle, non gardé en mémoire)" : ""}</span>${surligner(m.reponse, t.sonde)}</div>`;
   if (t.sonde) {
     h += `<p>Question de rappel sur <b>${esc(t.sonde.cle)}</b> · attendu : <b>${t.sonde.attendu === null ? "rien (fait oublié)" : esc(t.sonde.attendu)}</b><br>verdict : <span class="verdict ${m.verdict}">${LIBELLE_VERDICT[m.verdict]}</span></p>`;
   } else if (t.bavardage) h += `<p class="muted" style="font-size:12px">tour de bavardage, sans fait à retenir</p>`;
@@ -433,7 +441,9 @@ function verifierConformite() {
   let ok = true, n = 0;
   try {
     const ref = JSON.parse(document.getElementById("trace-java").textContent).strategies;
+    if (Object.keys(ref).join() !== Object.keys(STRATEGIES).join()) ok = false;
     for (const k in STRATEGIES) {
+      if (!ref[k] || ref[k].length !== runs[k].length) ok = false;
       runs[k].forEach((m, i) => { n++; const r = ref[k][i]; if (!r || r[0] !== m.caracteres || r[1] !== m.verdict) ok = false; });
     }
   } catch (e) { ok = false; }

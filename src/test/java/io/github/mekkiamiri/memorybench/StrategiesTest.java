@@ -16,6 +16,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StrategiesTest {
@@ -52,7 +53,7 @@ class StrategiesTest {
         tour(r, 1, "Je pars à Lyon.", Fait.pose("ville", "Lyon"));
         tour(r, 2, "Finalement Grenoble.", Fait.pose("ville", "Grenoble"));
         bavarder(r, 3, 4);
-        assertEquals("Je pars à Lyon. | Finalement Grenoble.", r.resumeCourant());
+        assertEquals("Je pars à Lyon.\nFinalement Grenoble.", r.resumeCourant());
         assertEquals(Message.Role.SYSTEME, r.contexte("").get(0).role());
         assertTrue(r.contexte("").size() <= 1 + 6);
     }
@@ -64,6 +65,34 @@ class StrategiesTest {
                 Message.utilisateur("Premier fait assez long.", 1, List.of(Fait.pose("a", "long"))),
                 Message.utilisateur("Second fait.", 2, List.of(Fait.pose("b", "Second")))));
         assertEquals("Second fait.", resume);
+    }
+
+    @Test
+    void leResumeurNeCoupePasUnePhraseQuiContientUnePipe() {
+        String resume = new ResumeurCumulatif(600).resumer("", List.of(
+                Message.utilisateur("Le choix A | B est fait.", 1, List.of(Fait.pose("choix", "A | B")))));
+        assertEquals("Le choix A | B est fait.", new ResumeurCumulatif(600).resumer(resume, List.of()));
+    }
+
+    @Test
+    void lesReglagesIncoherentsSontRefuses() {
+        assertThrows(IllegalArgumentException.class, () -> new FenetreGlissante(5));
+        assertThrows(IllegalArgumentException.class, () -> new Resume(12, 5, new ResumeurCumulatif(600)));
+        assertThrows(IllegalArgumentException.class, () -> new Resume(12, -2, new ResumeurCumulatif(600)));
+        assertThrows(IllegalArgumentException.class, () -> new Recuperation(3, 4));
+        assertThrows(IllegalArgumentException.class, () -> new Recuperation(6, -1));
+        assertThrows(IllegalArgumentException.class, () -> new ResumeurCumulatif(0));
+    }
+
+    @Test
+    void unFaitOublieResteOublieMemeSiLaCleRecoitUneNouvelleValeur() {
+        JournalEvenements j = new JournalEvenements(10, 3);
+        tour(j, 1, "Mon numéro est le 0611.", Fait.pose("telephone", "0611"));
+        tour(j, 2, "Oublie mon numéro.", Fait.oubli("telephone"));
+        tour(j, 3, "Mon nouveau numéro est le 0722.", Fait.pose("telephone", "0722"));
+        String vue = texte(j, "");
+        assertFalse(vue.contains("0611"), vue);
+        assertTrue(vue.contains("telephone = 0722"));
     }
 
     @Test

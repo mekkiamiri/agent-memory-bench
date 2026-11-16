@@ -226,7 +226,7 @@ body.show-notes .slide.active .notes{display:block;position:absolute;left:120px;
     <div class="k reveal">Devoxx France 2027</div>
     <h1 class="reveal" style="margin-top:40px">La mémoire de vos agents Java :<br><em>fenêtre, résumé ou journal ?</em></h1>
   </div>
-  <div class="readouts reveal" style="position:absolute;left:120px;bottom:130px"><div><b>4</b><span>stratégies</span></div><div><b>3</b><span>conversations</span></div><div><b>29</b><span>questions de rappel</span></div></div>
+  <div class="readouts reveal" style="position:absolute;left:120px;bottom:130px"><div><b>4+1</b><span>stratégies + session Spring AI</span></div><div><b>3</b><span>conversations</span></div><div><b>29</b><span>questions de rappel</span></div></div>
   <div style="position:absolute;right:120px;bottom:140px;text-align:right" class="reveal"><h3>Mekki Amiri</h3><p class="muted" style="font-size:24px;margin:8px 0 0">Tech Lead · architecte système</p></div>
   <aside class="notes">Bonjour. 45 minutes, une conversation qui dure, et des mesures plutôt que des opinions.</aside>
 </section>
@@ -235,10 +235,10 @@ body.show-notes .slide.active .notes{display:block;position:absolute;left:120px;
 <section class="slide">
   <div class="pad" style="top:260px">
     <div class="k reveal">Le problème</div>
-    <h2 class="reveal" style="margin-top:30px">Au tour 14, le budget change.<br><em>Au tour 32, l'agent l'a perdu.</em></h2>
+    <h2 class="reveal" style="margin-top:30px">Au tour 14, le budget change.<br><em>Au tour 32, il est sorti du prompt.</em></h2>
   </div>
   <div class="chrome"><span>La mémoire de vos agents Java</span><span class="n"></span></div>
-  <aside class="notes">Ouvrir la page de démo, stratégie fenêtre, aller au tour 32.</aside>
+  <aside class="notes">Ouvrir la page de démo, stratégie fenêtre, aller au tour 32. C'est le comportement de la mémoire, pas encore une réponse de modèle mesurée.</aside>
 </section>
 
 <!-- 3. Démo : la conversation -->
@@ -295,7 +295,7 @@ body.show-notes .slide.active .notes{display:block;position:absolute;left:120px;
         <span class="h">WindowCompactionStrategy.builder().lastTurns(10).build()</span>)
     .build())
   .build();</pre>
-    <p class="muted reveal" style="margin-top:40px">Exemple du billet de sortie de Spring AI 2.1.0-RC1.</p>
+    <p class="muted reveal" style="margin-top:40px">Exemple du billet Spring AI 2.1.0-RC1 · SessionAdvisors : jar spring-ai-session-advisor</p>
   </div>
   <div class="chrome"><span>La mémoire de vos agents Java</span><span class="n"></span></div>
 </section>
@@ -408,7 +408,7 @@ A: C'est entendu, je ne le garde plus.
     <div class="k reveal">2 / 4 · résumé</div>
     <h2 class="reveal" style="margin:30px 0 40px">On résume ce qui sort.</h2>
     <p class="reveal">Tour 27 : le numéro <em>oublié</em> est toujours dans le résumé.</p>
-    <p class="muted reveal">Un résumé qui accumule garde aussi l'ancien budget.</p>
+    <p class="muted reveal">Ici un <em>faux résumeur</em>, qui accumule. Un vrai modèle : à mesurer.</p>
   </div>
   <div class="chrome"><span>La mémoire de vos agents Java</span><span class="n"></span></div>
   <aside class="notes">Démo page : résumé, tour 27. Honnêteté : en CI c'est un faux résumeur qui accumule. Un vrai modèle peut résoudre les contradictions, ou pas : à mesurer.</aside>
@@ -420,7 +420,7 @@ A: C'est entendu, je ne le garde plus.
     <div class="k reveal">3 / 4 · journal d'événements</div>
     <h2 class="reveal" style="margin:30px 0 40px">L'état des faits, <em>rejoué</em>.</h2>
     <p class="reveal">Faits connus + derniers tours. L'oubli est un événement.</p>
-    <p class="muted reveal">Le journal garde le numéro ; la vue ne le montre plus.</p>
+    <p class="muted reveal">Biais : faits annotés = <em>extracteur parfait</em>. Le vrai coût : à mesurer.</p>
   </div>
   <div class="chrome"><span>La mémoire de vos agents Java</span><span class="n"></span></div>
   <aside class="notes">Démo page : journal, tours 27 et 32. Biais à dire tout de suite : ici le journal reçoit les faits annotés, donc un extracteur parfait. En vrai, un outil remember / forget appelé par le modèle : coût et erreurs à mesurer.</aside>
@@ -494,14 +494,14 @@ sessions.getActiveMessages(ID);</pre>
   <div class="chrome"><span>La mémoire de vos agents Java</span><span class="n"></span></div>
 </section>
 
-<!-- 25. Partie 5 (39-43) -->
+<!-- 24. Partie 5 (39-43) -->
 <section class="slide">
   <div class="ruler"><i style="left:0px;height:40px"></i><i style="left:28px;height:12px"></i><i style="left:56px;height:12px"></i><i style="left:84px;height:12px"></i><i style="left:112px;height:12px"></i><i style="left:140px;height:24px"></i><i style="left:168px;height:12px"></i><i style="left:196px;height:12px"></i><i style="left:224px;height:12px"></i><i style="left:252px;height:12px"></i><i style="left:280px;height:40px"></i><i style="left:308px;height:12px"></i><i style="left:336px;height:12px"></i><i style="left:364px;height:12px"></i><i style="left:392px;height:12px"></i><i style="left:420px;height:24px"></i><i style="left:448px;height:12px"></i><i style="left:476px;height:12px"></i><i style="left:504px;height:12px"></i><i style="left:532px;height:12px"></i><i style="left:560px;height:40px"></i><i style="left:588px;height:12px"></i><i style="left:616px;height:12px"></i><i style="left:644px;height:12px"></i><i style="left:672px;height:12px"></i><i style="left:700px;height:24px"></i><i style="left:728px;height:12px"></i><i style="left:756px;height:12px"></i><i style="left:784px;height:12px"></i><i style="left:812px;height:12px"></i><i style="left:840px;height:40px"></i><i style="left:868px;height:12px"></i><i style="left:896px;height:12px"></i><i style="left:924px;height:12px"></i><i style="left:952px;height:12px"></i><i style="left:980px;height:24px"></i><i style="left:1008px;height:12px"></i><i style="left:1036px;height:12px"></i><i style="left:1064px;height:12px"></i><i style="left:1092px;height:12px"></i><i style="left:1120px;height:40px"></i><i style="left:1148px;height:12px"></i><i style="left:1176px;height:12px"></i><i style="left:1204px;height:12px"></i><i style="left:1232px;height:12px"></i><i style="left:1260px;height:24px"></i><i style="left:1288px;height:12px"></i><i style="left:1316px;height:12px"></i><i style="left:1344px;height:12px"></i><i style="left:1372px;height:12px"></i><i style="left:1400px;height:40px"></i><i style="left:1428px;height:12px"></i><i style="left:1456px;height:12px"></i><i style="left:1484px;height:12px"></i><i style="left:1512px;height:12px"></i><i style="left:1540px;height:24px"></i><i style="left:1568px;height:12px"></i><i style="left:1596px;height:12px"></i><i style="left:1624px;height:12px"></i><i style="left:1652px;height:12px"></i></div><div class="needle"></div>
   <div class="pad" style="top:320px"><div class="k reveal">Partie 5</div><h1 class="reveal" style="margin-top:30px">Quelle mémoire, <em>quand ?</em></h1></div>
   <div class="chrome"><span>La mémoire de vos agents Java</span><span class="n"></span></div>
 </section>
 
-<!-- 26. Grille de choix (provisoire) -->
+<!-- 25. Grille de choix (provisoire) -->
 <section class="slide">
   <div class="pad">
     <div class="k reveal">Grille de choix · provisoire</div>
@@ -514,7 +514,7 @@ sessions.getActiveMessages(ID);</pre>
   <div class="chrome"><span>La mémoire de vos agents Java</span><span class="n"></span></div>
 </section>
 
-<!-- 27. Migrer -->
+<!-- 26. Migrer -->
 <section class="slide">
   <div class="pad">
     <div class="k reveal">Migrer de ChatMemory vers la session</div>
@@ -524,12 +524,13 @@ MessageChatMemoryAdvisor.builder(chatMemory).build()
 <span class="h">SessionAdvisors.builder(sessionService)</span>
     .compaction(trigger, strategy).build()
 <span class="c">// et un id de session à chaque appel : pas de session par défaut</span></pre>
+    <p class="muted reveal" style="margin-top:30px">SessionAdvisors : org.springframework.ai:spring-ai-session-advisor</p>
   </div>
   <div class="chrome"><span>La mémoire de vos agents Java</span><span class="n"></span></div>
-  <aside class="notes">Le billet : chaque dépréciation nomme son remplaçant. Pas de session par défaut, volontairement : une session partagée mélangerait les historiques. Dépôts JDBC : JdbcSessionRepository (PostgreSQL, MySQL, MariaDB, H2).</aside>
+  <aside class="notes">SessionAdvisors est dans org.springframework.ai:spring-ai-session-advisor (2.1.0-RC2), paquet org.springframework.ai.session.advisor ; build() renvoie la liste des advisors. Le billet : chaque dépréciation nomme son remplaçant. Pas de session par défaut, volontairement : une session partagée mélangerait les historiques. Dépôts JDBC : JdbcSessionRepository (PostgreSQL, MySQL, MariaDB, H2).</aside>
 </section>
 
-<!-- 28. Chez vous -->
+<!-- 27. Chez vous -->
 <section class="slide">
   <div class="pad">
     <div class="k reveal">Chez vous, demain</div>
@@ -541,7 +542,7 @@ mvn -q compile exec:java</pre>
   <div class="chrome"><span>La mémoire de vos agents Java</span><span class="n"></span></div>
 </section>
 
-<!-- 29. Fin (43-45) -->
+<!-- 28. Fin (43-45) -->
 <section class="slide">
   <div class="ruler"><i style="left:0px;height:40px"></i><i style="left:28px;height:12px"></i><i style="left:56px;height:12px"></i><i style="left:84px;height:12px"></i><i style="left:112px;height:12px"></i><i style="left:140px;height:24px"></i><i style="left:168px;height:12px"></i><i style="left:196px;height:12px"></i><i style="left:224px;height:12px"></i><i style="left:252px;height:12px"></i><i style="left:280px;height:40px"></i><i style="left:308px;height:12px"></i><i style="left:336px;height:12px"></i><i style="left:364px;height:12px"></i><i style="left:392px;height:12px"></i><i style="left:420px;height:24px"></i><i style="left:448px;height:12px"></i><i style="left:476px;height:12px"></i><i style="left:504px;height:12px"></i><i style="left:532px;height:12px"></i><i style="left:560px;height:40px"></i><i style="left:588px;height:12px"></i><i style="left:616px;height:12px"></i><i style="left:644px;height:12px"></i><i style="left:672px;height:12px"></i><i style="left:700px;height:24px"></i><i style="left:728px;height:12px"></i><i style="left:756px;height:12px"></i><i style="left:784px;height:12px"></i><i style="left:812px;height:12px"></i><i style="left:840px;height:40px"></i><i style="left:868px;height:12px"></i><i style="left:896px;height:12px"></i><i style="left:924px;height:12px"></i><i style="left:952px;height:12px"></i><i style="left:980px;height:24px"></i><i style="left:1008px;height:12px"></i><i style="left:1036px;height:12px"></i><i style="left:1064px;height:12px"></i><i style="left:1092px;height:12px"></i><i style="left:1120px;height:40px"></i><i style="left:1148px;height:12px"></i><i style="left:1176px;height:12px"></i><i style="left:1204px;height:12px"></i><i style="left:1232px;height:12px"></i><i style="left:1260px;height:24px"></i><i style="left:1288px;height:12px"></i><i style="left:1316px;height:12px"></i><i style="left:1344px;height:12px"></i><i style="left:1372px;height:12px"></i><i style="left:1400px;height:40px"></i><i style="left:1428px;height:12px"></i><i style="left:1456px;height:12px"></i><i style="left:1484px;height:12px"></i><i style="left:1512px;height:12px"></i><i style="left:1540px;height:24px"></i><i style="left:1568px;height:12px"></i><i style="left:1596px;height:12px"></i><i style="left:1624px;height:12px"></i><i style="left:1652px;height:12px"></i></div><div class="needle"></div>
   <div class="pad" style="top:300px">

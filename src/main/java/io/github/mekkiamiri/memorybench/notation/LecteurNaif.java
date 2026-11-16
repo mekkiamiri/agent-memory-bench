@@ -22,7 +22,7 @@ public final class LecteurNaif implements Repondeur {
         String meilleure = null;
         int position = -1;
         for (String valeur : sonde.candidats()) {
-            int p = texte.lastIndexOf(valeur);
+            int p = Noteur.position(texte, valeur);
             if (p > position) {
                 position = p;
                 meilleure = valeur;

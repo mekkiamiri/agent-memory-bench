@@ -19,6 +19,9 @@ public final class Resume implements StrategieMemoire {
     private String resume = "";
 
     public Resume(int seuilMessages, int messagesGardes, Resumeur resumeur) {
+        if (messagesGardes < 2 || messagesGardes % 2 != 0) {
+            throw new IllegalArgumentException("messagesGardes doit être pair et au moins 2 (des tours complets)");
+        }
         if (messagesGardes >= seuilMessages) {
             throw new IllegalArgumentException("messagesGardes doit être inférieur à seuilMessages");
         }

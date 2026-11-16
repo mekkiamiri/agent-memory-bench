@@ -62,6 +62,16 @@ class BancTest {
     }
 
     @Test
+    void laReponseDuModeleNeContaminePasLesToursSuivants() {
+        Scenario s = LecteurScenario.charger("demenagement");
+        Strategies.toutes().forEach((nom, fabrique) -> {
+            var strategie = fabrique.get();
+            Banc.jouer(s, strategie, (prompt, sonde) -> "POISON-" + sonde.cle());
+            assertTrue(!Contexte.texte(strategie.contexte("POISON budget ville")).contains("POISON"), nom);
+        });
+    }
+
+    @Test
     void leBancEstDeterministe() {
         Scenario s = LecteurScenario.charger("voyage");
         Strategies.toutes().forEach((nom, fabrique) ->

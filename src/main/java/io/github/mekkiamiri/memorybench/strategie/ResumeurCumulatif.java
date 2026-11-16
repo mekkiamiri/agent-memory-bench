@@ -9,18 +9,22 @@ import java.util.List;
 /**
  * Faux résumeur déterministe, pour les tests et la CI (aucun appel de modèle).
  *
- * <p>Il garde le texte des messages de l'utilisateur porteurs d'un fait annoté, les met bout à bout
- * séparés par {@value #SEPARATEUR}, sans résoudre les contradictions, et retire les plus anciens
- * quand le budget de caractères est dépassé. C'est volontairement le comportement d'un résumé
- * « qui accumule » : un vrai modèle peut faire mieux (ou pire), et c'est à mesurer.
+ * <p>Il garde le texte des messages de l'utilisateur porteurs d'un fait annoté, un par ligne,
+ * sans résoudre les contradictions, et retire les plus anciens quand le budget de caractères
+ * est dépassé. C'est volontairement le comportement d'un résumé « qui accumule » : un vrai
+ * modèle peut faire mieux (ou pire), et c'est à mesurer. Le séparateur est le saut de ligne :
+ * un message du scénario n'en contient jamais.
  */
 public final class ResumeurCumulatif implements Resumeur {
 
-    static final String SEPARATEUR = " | ";
+    static final String SEPARATEUR = "\n";
 
     private final int budgetCaracteres;
 
     public ResumeurCumulatif(int budgetCaracteres) {
+        if (budgetCaracteres < 1) {
+            throw new IllegalArgumentException("budgetCaracteres doit être positif");
+        }
         this.budgetCaracteres = budgetCaracteres;
     }
 
@@ -28,7 +32,7 @@ public final class ResumeurCumulatif implements Resumeur {
     public String resumer(String resumePrecedent, List<Message> sortants) {
         List<String> entrees = new ArrayList<>();
         if (!resumePrecedent.isEmpty()) {
-            entrees.addAll(Arrays.asList(resumePrecedent.split(java.util.regex.Pattern.quote(SEPARATEUR))));
+            entrees.addAll(Arrays.asList(resumePrecedent.split(SEPARATEUR)));
         }
         for (Message m : sortants) {
             if (m.role() == Message.Role.UTILISATEUR && !m.faits().isEmpty()) {

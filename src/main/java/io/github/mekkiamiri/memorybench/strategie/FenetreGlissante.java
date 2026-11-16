@@ -12,8 +12,8 @@ public final class FenetreGlissante implements StrategieMemoire {
     private final List<Message> messages = new ArrayList<>();
 
     public FenetreGlissante(int maxMessages) {
-        if (maxMessages < 2) {
-            throw new IllegalArgumentException("maxMessages doit valoir au moins 2");
+        if (maxMessages < 2 || maxMessages % 2 != 0) {
+            throw new IllegalArgumentException("maxMessages doit être pair et au moins 2 (des tours complets)");
         }
         this.maxMessages = maxMessages;
     }

@@ -75,7 +75,10 @@ public final class LecteurScenario {
                 while (m.find()) {
                     String cle = m.group(2).strip();
                     if (m.group(1).equals("set")) {
-                        String valeur = m.group(3) == null ? "" : m.group(3).strip();
+                        if (m.group(3) == null || m.group(3).isBlank()) {
+                            throw erreur(id, i, "{set " + cle + "} sans valeur");
+                        }
+                        String valeur = m.group(3).strip();
                         if (historique.getOrDefault(cle, List.of()).contains(valeur)) {
                             throw erreur(id, i, "la valeur « " + valeur + " » a déjà été posée pour " + cle);
                         }

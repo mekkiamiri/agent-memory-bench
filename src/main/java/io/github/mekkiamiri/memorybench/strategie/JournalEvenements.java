@@ -98,21 +98,20 @@ public final class JournalEvenements implements StrategieMemoire {
         return etat;
     }
 
-    /** Valeurs déjà posées pour les clés dont le dernier événement est un oubli. */
+    /**
+     * Valeurs oubliées, de façon définitive : toute valeur posée avant un oubli de sa clé,
+     * même si la clé reçoit ensuite une nouvelle valeur ({@code set → forget → set}).
+     */
     Set<String> valeursOubliees() {
         Map<String, List<String>> valeurs = new LinkedHashMap<>();
-        Set<String> oubliees = new HashSet<>();
+        Set<String> resultat = new HashSet<>();
         for (Evenement e : journal) {
             if (e instanceof Evenement.FaitPose p) {
                 valeurs.computeIfAbsent(p.cle(), k -> new ArrayList<>()).add(p.valeur());
-                oubliees.remove(p.cle());
             } else if (e instanceof Evenement.FaitOublie o) {
-                oubliees.add(o.cle());
+                resultat.addAll(valeurs.getOrDefault(o.cle(), List.of()));
+                valeurs.remove(o.cle());
             }
-        }
-        Set<String> resultat = new HashSet<>();
-        for (String cle : oubliees) {
-            resultat.addAll(valeurs.getOrDefault(cle, List.of()));
         }
         return resultat;
     }

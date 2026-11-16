@@ -19,8 +19,9 @@ Dépôt de démo du talk « La mémoire de vos agents Java : fenêtre, résumé 
   faits qui changent en cours de route, des faits à oublier volontairement, et des questions de
   rappel à réponse connue. La réponse attendue est recalculée et vérifiée à la lecture.
 - **Un noteur** : rappel correct, fait périmé ou oublié ressorti, fait manqué, et taille du prompt
-  à chaque tour (caractères et tokens estimés).
-- **30 tests JUnit**, une CI Maven (Java 21) sans aucun appel à un vrai modèle.
+  à chaque tour (caractères et tokens estimés). Les valeurs sont reconnues comme mots entiers ; la réponse
+  du modèle à une question de rappel n'entre pas dans l'historique (réponse fixe à la place).
+- **37 tests JUnit**, une CI Maven (Java 21) sans aucun appel à un vrai modèle.
 - **Une page** qui rejoue la conversation d'exemple en JavaScript, avec les mêmes stratégies, et qui
   vérifie elle-même qu'elle obtient exactement la trace du banc Java.
 

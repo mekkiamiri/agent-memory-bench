@@ -25,6 +25,13 @@ import java.util.function.Supplier;
 /** Rejoue un scénario tour par tour avec une stratégie, et mesure chaque tour. */
 public final class Banc {
 
+    /**
+     * Réponse enregistrée dans la mémoire après une question de rappel, à la place de la réponse
+     * du modèle : une réponse fausse ne doit pas contaminer les tours suivants, et toutes les
+     * stratégies doivent voir le même historique.
+     */
+    public static final String REPONSE_QUESTION = "Je vérifie et je reviens vers vous.";
+
     private Banc() {
     }
 
@@ -49,7 +56,8 @@ public final class Banc {
             mesures.add(new MesureTour(tour.numero(), prompt.size(), Contexte.caracteres(prompt),
                     Contexte.tokensEstimes(prompt), verdict, attendu, perime, reponse));
             strategie.enregistrer(question);
-            strategie.enregistrer(Message.assistant(reponse, tour.numero()));
+            String enregistree = tour.estQuestion() ? REPONSE_QUESTION : reponse;
+            strategie.enregistrer(Message.assistant(enregistree, tour.numero()));
         }
         return new Resultat(scenario.id(), strategie.nom(), mesures);
     }

@@ -29,6 +29,12 @@ public final class Recuperation implements StrategieMemoire {
     private final List<Message> messages = new ArrayList<>();
 
     public Recuperation(int messagesRecents, int nombreRecuperes) {
+        if (messagesRecents < 0 || messagesRecents % 2 != 0) {
+            throw new IllegalArgumentException("messagesRecents doit être pair et positif (des tours complets)");
+        }
+        if (nombreRecuperes < 0) {
+            throw new IllegalArgumentException("nombreRecuperes doit être positif");
+        }
         this.messagesRecents = messagesRecents;
         this.nombreRecuperes = nombreRecuperes;
     }
