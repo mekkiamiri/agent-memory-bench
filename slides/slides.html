@@ -1,0 +1,337 @@
+<!-- Slides du talk « La mémoire de vos agents Java : fenêtre, résumé ou journal ? »
+     Construire : python3 <kit>/build_deck.py slides/slides.html docs/slides/index.html "La mémoire de vos agents Java"
+     Règle : aucun chiffre de résultat avant mesure ; les emplacements sont marqués « à mesurer ».
+     Ce qui est montré « dans le prompt » vient du banc (comportement déterministe des stratégies), pas d'un modèle. -->
+
+<!-- 1. Titre (0-4) -->
+<section class="slide">
+  {{RULER}}
+  <div class="pad" style="top:250px">
+    <div class="k reveal">Devoxx France 2027</div>
+    <h1 class="reveal" style="margin-top:40px">La mémoire de vos agents Java :<br><em>fenêtre, résumé ou journal ?</em></h1>
+  </div>
+  <div class="readouts reveal" style="position:absolute;left:120px;bottom:130px"><div><b>4</b><span>stratégies</span></div><div><b>3</b><span>conversations</span></div><div><b>29</b><span>questions de rappel</span></div></div>
+  <div style="position:absolute;right:120px;bottom:140px;text-align:right" class="reveal"><h3>Mekki Amiri</h3><p class="muted" style="font-size:24px;margin:8px 0 0">Tech Lead · architecte système</p></div>
+  <aside class="notes">Bonjour. 45 minutes, une conversation qui dure, et des mesures plutôt que des opinions.</aside>
+</section>
+
+<!-- 2. Le problème -->
+<section class="slide">
+  <div class="pad" style="top:260px">
+    <div class="k reveal">Le problème</div>
+    <h2 class="reveal" style="margin-top:30px">Au tour 14, le budget change.<br><em>Au tour 32, l'agent l'a perdu.</em></h2>
+  </div>
+  {{CHROME}}
+  <aside class="notes">Ouvrir la page de démo, stratégie fenêtre, aller au tour 32.</aside>
+</section>
+
+<!-- 3. Démo : la conversation -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">Démo · le déménagement · 34 tours</div>
+    <pre class="code reveal" style="margin-top:40px"><span class="c">tour 03</span>  Mon budget total est de <span class="h">1 200 euros</span>.
+<span class="c">tour 09</span>  Mon numéro est le <span class="h">06 12 34 56 78</span>.
+<span class="c">tour 14</span>  Mon budget passe à <span class="h">1 450 euros</span>.
+<span class="c">tour 18</span>  Oublie mon numéro de téléphone.
+<span class="c">tour 27</span>  Tu peux me redonner mon numéro ?   <span class="c">attendu : rien</span>
+<span class="c">tour 32</span>  Et mon budget, il est de combien ? <span class="c">attendu : 1 450 euros</span></pre>
+  </div>
+  {{CHROME}}
+  <aside class="notes">Démo live sur la page : on avance tour par tour, on regarde ce qui part dans le prompt. Plan B : vidéo enregistrée.</aside>
+</section>
+
+<!-- 4. La question -->
+<section class="slide">
+  <div class="pad" style="top:220px">
+    <div class="k reveal">La question</div>
+    <h2 class="reveal" style="margin-top:30px">Que garder dans le prompt,<br><em>tour après tour ?</em></h2>
+    <p class="muted reveal" style="margin-top:50px">Le bon fait, au bon moment, pour combien de tokens.</p>
+  </div>
+  {{CHROME}}
+</section>
+
+<!-- 5. Partie 1 (4-9) -->
+<section class="slide">
+  {{RULER}}
+  <div class="pad" style="top:320px"><div class="k reveal">Partie 1</div><h1 class="reveal" style="margin-top:30px">Pourquoi <em>maintenant</em></h1></div>
+  {{CHROME}}
+</section>
+
+<!-- 6. ChatMemory obsolète -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">Spring AI 2.1 · octobre 2026</div>
+    <h2 class="reveal" style="margin:30px 0 50px"><em>ChatMemory</em> est obsolète.</h2>
+    <p class="reveal">Remplacée par une <em>session</em> : un journal d'événements.</p>
+    <p class="muted reveal">ChatMemory, MessageWindowChatMemory, MessageChatMemoryAdvisor : retrait prévu en 3.0.</p>
+  </div>
+  {{CHROME}}
+  <aside class="notes">Source : billet Spring AI 2.1.0-RC1, 23 octobre 2026. RC2 sur Maven Central. VectorStoreChatMemoryAdvisor reste : pas encore de rappel sémantique dans les sessions.</aside>
+</section>
+
+<!-- 7. La session en code -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">La session · ChatClient</div>
+    <pre class="code reveal" style="margin-top:40px">ChatClient.builder(chatModel)
+  .defaultAdvisors(SessionAdvisors.builder(sessionService)
+    .compaction(<span class="h">new TurnCountTrigger(20)</span>,
+        <span class="h">WindowCompactionStrategy.builder().lastTurns(10).build()</span>)
+    .build())
+  .build();</pre>
+    <p class="muted reveal" style="margin-top:40px">Exemple du billet de sortie de Spring AI 2.1.0-RC1.</p>
+  </div>
+  {{CHROME}}
+</section>
+
+<!-- 8. Journal d'événements -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">Un journal d'événements</div>
+    <ul class="steps reveal">
+      <li data-n="01">On ajoute, on ne réécrit jamais <span class="muted">· append-only</span></li>
+      <li data-n="02">La compaction pose une <em>frontière</em> <span class="muted">· sur un début de tour</span></li>
+      <li data-n="03">Le modèle voit une <em>vue</em> du journal <span class="muted">· pas le journal</span></li>
+    </ul>
+  </div>
+  {{CHROME}}
+  <aside class="notes">Pour qui a fait de l'event sourcing : c'est un journal avec projection. Le journal reste complet ; la vue change.</aside>
+</section>
+
+<!-- 9. Compaction et mémoire entre sessions -->
+<section class="slide">
+  <div class="pad" style="top:220px">
+    <div class="k reveal">Ce dont on parle</div>
+    <h2 class="reveal" style="margin-top:30px">La mémoire <em>dans</em> une conversation.</h2>
+    <p class="muted reveal" style="margin-top:50px">Pas la mémoire entre sessions : Anthropic les sépare aussi (« The components of agent memory », novembre 2026).</p>
+  </div>
+  {{CHROME}}
+</section>
+
+<!-- 10. Partie 2 (9-15) -->
+<section class="slide">
+  {{RULER}}
+  <div class="pad" style="top:320px"><div class="k reveal">Partie 2</div><h1 class="reveal" style="margin-top:30px">Le <em>banc</em></h1></div>
+  {{CHROME}}
+</section>
+
+<!-- 11. Les conversations -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">Trois conversations longues, scénarisées</div>
+    <div class="readouts reveal" style="margin-top:60px"><div><b>34</b><span>déménagement</span></div><div><b>53</b><span>projet Java</span></div><div><b>71</b><span>voyage</span></div></div>
+    <p class="reveal" style="margin-top:60px">Des faits qui <em>changent</em>. Des faits à <em>oublier</em>.<br><span class="muted">Et du bavardage entre les deux.</span></p>
+  </div>
+  {{CHROME}}
+  <aside class="notes">Nombre de tours par conversation. Les valeurs attendues sont recalculées à la lecture du fichier : une erreur dans le scénario fait échouer les tests.</aside>
+</section>
+
+<!-- 12. Le format -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">Un scénario, c'est un fichier texte</div>
+    <pre class="code reveal" style="margin-top:40px">U: Mon budget passe à 1 450 euros. <span class="h">{set budget=1 450 euros}</span>
+A: Budget mis à jour : 1 450 euros.
+U: Et oublie mon numéro de téléphone. <span class="h">{forget telephone}</span>
+A: C'est entendu, je ne le garde plus.
+<span class="c">~ 3                                   ← 3 tours de bavardage</span>
+? telephone | Tu peux me redonner mon numéro ? | <span class="h">∅</span></pre>
+  </div>
+  {{CHROME}}
+</section>
+
+<!-- 13. Ce qu'on mesure -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">Ce qu'on mesure</div>
+    <ul class="steps reveal">
+      <li data-n="01">Rappel correct <span class="muted">· la valeur d'aujourd'hui</span></li>
+      <li data-n="02">Fait périmé ou oublié qui ressort <span class="muted">· le pire des cas</span></li>
+      <li data-n="03">Taille du prompt <span class="muted">· à chaque tour</span></li>
+    </ul>
+  </div>
+  {{CHROME}}
+  <aside class="notes">Le noteur est automatique ; les réponses « manqué » ou « périmé » sont relues à la main avec un vrai modèle.</aside>
+</section>
+
+<!-- 14. Partie 3 (15-31) -->
+<section class="slide">
+  {{RULER}}
+  <div class="pad" style="top:320px"><div class="k reveal">Partie 3</div><h1 class="reveal" style="margin-top:30px">Quatre <em>stratégies</em></h1></div>
+  {{CHROME}}
+</section>
+
+<!-- 15. Une interface -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">Une seule interface</div>
+    <pre class="code reveal" style="margin-top:40px">public interface StrategieMemoire {
+  void enregistrer(Message message);
+  <span class="h">List&lt;Message&gt; contexte(String requete);</span>
+}</pre>
+    <p class="muted reveal" style="margin-top:40px">Même conversation, même noteur. Seule la mémoire change.</p>
+  </div>
+  {{CHROME}}
+</section>
+
+<!-- 16. Fenêtre -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">1 / 4 · fenêtre glissante</div>
+    <h2 class="reveal" style="margin:30px 0 40px">Les 6 derniers tours.</h2>
+    <p class="reveal">Tour 32 : le budget n'est plus dans le prompt.</p>
+    <p class="muted reveal">Simple, borné, et aveugle à tout ce qui est plus vieux.</p>
+  </div>
+  {{CHROME}}
+  <aside class="notes">Démo page : fenêtre, tour 32. Le budget du tour 14 est sorti de la fenêtre. C'est ce que faisait MessageWindowChatMemory.</aside>
+</section>
+
+<!-- 17. Résumé -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">2 / 4 · résumé</div>
+    <h2 class="reveal" style="margin:30px 0 40px">On résume ce qui sort.</h2>
+    <p class="reveal">Tour 27 : le numéro <em>oublié</em> est toujours dans le résumé.</p>
+    <p class="muted reveal">Un résumé qui accumule garde aussi l'ancien budget.</p>
+  </div>
+  {{CHROME}}
+  <aside class="notes">Démo page : résumé, tour 27. Honnêteté : en CI c'est un faux résumeur qui accumule. Un vrai modèle peut résoudre les contradictions, ou pas : à mesurer.</aside>
+</section>
+
+<!-- 18. Journal -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">3 / 4 · journal d'événements</div>
+    <h2 class="reveal" style="margin:30px 0 40px">L'état des faits, <em>rejoué</em>.</h2>
+    <p class="reveal">Faits connus + derniers tours. L'oubli est un événement.</p>
+    <p class="muted reveal">Le journal garde le numéro ; la vue ne le montre plus.</p>
+  </div>
+  {{CHROME}}
+  <aside class="notes">Démo page : journal, tours 27 et 32. Biais à dire tout de suite : ici le journal reçoit les faits annotés, donc un extracteur parfait. En vrai, un outil remember / forget appelé par le modèle : coût et erreurs à mesurer.</aside>
+</section>
+
+<!-- 19. Journal Spring AI -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">3 bis · la session Spring AI sur le même banc</div>
+    <pre class="code reveal" style="margin-top:40px">sessions.appendMessage(ID, new AssistantMessage(texte));
+sessions.compact(ID, <span class="h">new TurnCountTrigger(10)</span>,
+    <span class="h">WindowCompactionStrategy.builder().lastTurns(3).build()</span>);
+...
+sessions.getActiveMessages(ID);</pre>
+    <p class="muted reveal" style="margin-top:40px">Sans faits structurés, la vue n'est qu'une fenêtre par tours.</p>
+  </div>
+  {{CHROME}}
+  <aside class="notes">spring-ai-session 2.1.0-RC2, vraies classes. Ajouter des faits : des événements à type personnalisé dans le même journal (le billet le permet). Étape suivante du dépôt.</aside>
+</section>
+
+<!-- 20. Récupération -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">4 / 4 · récupération</div>
+    <h2 class="reveal" style="margin:30px 0 40px">Les messages proches de la question.</h2>
+    <p class="reveal">Tour 27 : « mon numéro ? » ramène… <em>le numéro</em>.</p>
+    <p class="muted reveal">La récupération ne sait pas qu'un fait a été oublié.</p>
+  </div>
+  {{CHROME}}
+  <aside class="notes">Démo page : récupération, tour 27. Proximité lexicale dans le dépôt ; avec des embeddings, même problème de fond : rien ne marque le message comme oublié.</aside>
+</section>
+
+<!-- 21. Partie 4 (31-39) -->
+<section class="slide">
+  {{RULER}}
+  <div class="pad" style="top:320px"><div class="k reveal">Partie 4</div><h1 class="reveal" style="margin-top:30px">Avec un <em>vrai modèle</em></h1></div>
+  {{CHROME}}
+</section>
+
+<!-- 22. Tableau des résultats (à mesurer) -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">29 questions · 3 conversations</div>
+    <table class="m reveal" style="margin-top:40px">
+      <tr><th>Stratégie</th><th>Rappel</th><th>Périmé</th><th>Oubli qui fuit</th><th>Tokens</th></tr>
+      <tr><td>Fenêtre</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+      <tr><td>Résumé</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+      <tr><td>Journal (maison)</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+      <tr><td>Session Spring AI</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+      <tr><td>Récupération</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+    </table>
+    <div class="todo reveal" style="margin-top:36px">à mesurer · protocole dans PROTOCOLE.md</div>
+  </div>
+  {{CHROME}}
+  <aside class="notes">Le coût de la mémoire elle-même (appels de résumé, d'extraction, d'embeddings) est compté à part, à mesurer aussi.</aside>
+</section>
+
+<!-- 23. Prédictions contre mesures -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">Nos prédictions, confrontées aux mesures</div>
+    <table class="m reveal" style="margin-top:40px">
+      <tr><th>Prédiction (posée avant de mesurer)</th><th>Verdict</th></tr>
+      <tr><td>La fenêtre perd les faits anciens mais stables</td><td class="n">à mesurer</td></tr>
+      <tr><td>Un vrai résumé garde des faits périmés</td><td class="n">à mesurer</td></tr>
+      <tr><td>La récupération fait fuir les faits oubliés</td><td class="n">à mesurer</td></tr>
+      <tr><td>Le journal gagne, si l'extraction des faits suit</td><td class="n">à mesurer</td></tr>
+    </table>
+    <p class="muted reveal" style="margin-top:30px">Si une prédiction est fausse, on le dit ici.</p>
+  </div>
+  {{CHROME}}
+</section>
+
+<!-- 25. Partie 5 (39-43) -->
+<section class="slide">
+  {{RULER}}
+  <div class="pad" style="top:320px"><div class="k reveal">Partie 5</div><h1 class="reveal" style="margin-top:30px">Quelle mémoire, <em>quand ?</em></h1></div>
+  {{CHROME}}
+</section>
+
+<!-- 26. Grille de choix (provisoire) -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">Grille de choix · provisoire</div>
+    <div class="cols reveal" style="margin-top:50px;grid-template-columns:1fr 1fr 1fr;gap:40px">
+      <div class="panel"><h3>Conversation courte</h3><p class="muted">fenêtre</p><div class="todo">à mesurer</div></div>
+      <div class="panel"><h3>Faits qui changent</h3><p class="muted">journal + état</p><div class="todo">à mesurer</div></div>
+      <div class="panel"><h3>Historique à fouiller</h3><p class="muted">récupération</p><div class="todo">à mesurer</div></div>
+    </div>
+  </div>
+  {{CHROME}}
+</section>
+
+<!-- 27. Migrer -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">Migrer de ChatMemory vers la session</div>
+    <pre class="code reveal" style="margin-top:40px"><span class="c">// avant (obsolète en 2.1)</span>
+MessageChatMemoryAdvisor.builder(chatMemory).build()
+<span class="c">// après</span>
+<span class="h">SessionAdvisors.builder(sessionService)</span>
+    .compaction(trigger, strategy).build()
+<span class="c">// et un id de session à chaque appel : pas de session par défaut</span></pre>
+  </div>
+  {{CHROME}}
+  <aside class="notes">Le billet : chaque dépréciation nomme son remplaçant. Pas de session par défaut, volontairement : une session partagée mélangerait les historiques. Dépôts JDBC : JdbcSessionRepository (PostgreSQL, MySQL, MariaDB, H2).</aside>
+</section>
+
+<!-- 28. Chez vous -->
+<section class="slide">
+  <div class="pad">
+    <div class="k reveal">Chez vous, demain</div>
+    <pre class="code reveal" style="margin-top:40px">git clone https://github.com/mekkiamiri/agent-memory-bench
+mvn -B verify
+mvn -q compile exec:java</pre>
+    <p class="reveal" style="margin-top:40px">Écrivez <em>vos</em> conversations. Branchez <em>votre</em> modèle.</p>
+  </div>
+  {{CHROME}}
+</section>
+
+<!-- 29. Fin (43-45) -->
+<section class="slide">
+  {{RULER}}
+  <div class="pad" style="top:300px">
+    <h2 class="reveal">Ne demandez pas si l'agent se souvient.<br><em>Demandez de quoi.</em></h2>
+    <p class="reveal" style="margin-top:50px">mekkiamiri.github.io/agent-memory-bench</p>
+    <p class="muted reveal">Questions ?</p>
+  </div>
+  {{CHROME}}
+</section>

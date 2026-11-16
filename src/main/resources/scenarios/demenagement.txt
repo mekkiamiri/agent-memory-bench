@@ -1,0 +1,37 @@
+# titre: Le déménagement
+# Une personne prépare un déménagement avec un assistant. 34 tours.
+# Faits qui changent : ville, budget, date. Fait à oublier : téléphone. Faits stables : étage, animal.
+U: Bonjour ! Je prépare mon déménagement, je pars m'installer à Lyon. {set ville=Lyon}
+A: Bonne nouvelle ! Je note : déménagement à Lyon.
+U: Le nouvel appartement est au troisième étage, sans ascenseur. {set etage=troisième étage}
+A: Noté : troisième étage sans ascenseur, il faudra prévoir des bras.
+U: Mon budget total pour le déménagement est de 1 200 euros. {set budget=1 200 euros}
+A: Budget noté : 1 200 euros.
+~ 3
+U: Le camion est réservé pour le 15 mars. {set date=15 mars}
+A: Parfait, déménagement prévu le 15 mars.
+U: J'ai aussi un chat, il s'appelle Pistache, il faudra penser à lui. {set animal=Pistache}
+A: Pistache voyagera dans sa caisse de transport, pensez à l'eau.
+U: Si le déménageur doit me joindre, mon numéro est le 06 12 34 56 78. {set telephone=06 12 34 56 78}
+A: Je garde le 06 12 34 56 78 pour le déménageur.
+~ 3
+? budget | Rappelle-moi mon budget pour le déménagement ? | 1 200 euros
+U: Mauvaise nouvelle, le devis a augmenté : mon budget passe à 1 450 euros. {set budget=1 450 euros}
+A: Budget mis à jour : 1 450 euros.
+~ 2
+U: Finalement je ne vais plus à Lyon, j'ai accepté le poste à Grenoble. {set ville=Grenoble}
+A: Changement noté : vous partez à Grenoble.
+U: Et oublie mon numéro de téléphone, je préfère ne pas le laisser traîner. {forget telephone}
+A: C'est entendu, je ne le garde plus.
+~ 3
+? ville | Dans quelle ville je déménage, déjà ? | Grenoble
+U: Le camion a été décalé au 22 mars, le 15 n'était plus possible. {set date=22 mars}
+A: Nouvelle date notée : 22 mars.
+~ 3
+? telephone | Tu peux me redonner mon numéro de téléphone ? | ∅
+? date | Quelle est la date du déménagement ? | 22 mars
+~ 2
+? etage | À quel étage est le nouvel appartement ? | troisième étage
+? budget | Et mon budget, il est de combien maintenant ? | 1 450 euros
+? animal | Comment s'appelle mon chat ? | Pistache
+? ville | On récapitule : je déménage dans quelle ville ? | Grenoble

@@ -1,0 +1,45 @@
+# titre: Le voyage en famille
+# Une famille prépare un voyage avec un assistant. 71 tours.
+# Faits qui changent : destination, date de départ, nombre de voyageurs. Fait à oublier : numéro de passeport. Faits stables : régime, hôtel, budget.
+U: On voudrait partir en famille au printemps, direction Lisbonne. {set destination=Lisbonne}
+A: Bon choix, je note Lisbonne comme destination.
+U: Nous serons quatre personnes, deux adultes et deux enfants. {set voyageurs=quatre personnes}
+A: Noté : quatre personnes.
+U: Le budget global est de 3 800 euros, transport compris. {set budget=3 800 euros}
+A: Budget retenu : 3 800 euros.
+~ 5
+U: Départ prévu le 3 mai au matin. {set depart=3 mai}
+A: Je note un départ le 3 mai.
+U: Ma fille est végétarienne, il faudra des restaurants adaptés. {set regime=végétarienne}
+A: Je chercherai des adresses adaptées à une alimentation végétarienne.
+~ 6
+U: Pour la réservation du vol, mon numéro de passeport est 18AB55321. {set passeport=18AB55321}
+A: J'utilise le passeport 18AB55321 pour la réservation.
+~ 5
+? voyageurs | Combien de personnes partent ? | quatre personnes
+? depart | Quel jour on part ? | 3 mai
+~ 6
+U: Mes parents se joignent à nous : finalement nous serons six personnes. {set voyageurs=six personnes}
+A: Mis à jour : six personnes.
+U: On a trouvé un hôtel qui nous plaît, la Casa Azul. {set hotel=Casa Azul}
+A: Parfait, je retiens la Casa Azul.
+~ 6
+U: Changement de programme : ce sera Porto plutôt, les vols sont moins chers. {set destination=Porto}
+A: D'accord, destination modifiée : Porto.
+~ 5
+? destination | Où est-ce qu'on part, au final ? | Porto
+? voyageurs | On sera combien en tout ? | six personnes
+~ 4
+U: La réservation est faite, tu peux oublier mon numéro de passeport. {forget passeport}
+A: C'est noté, je ne le conserve pas.
+U: On décale le départ au 10 mai à cause des vacances scolaires. {set depart=10 mai}
+A: Nouvelle date : départ le 10 mai.
+~ 6
+? passeport | Rappelle-moi mon numéro de passeport ? | ∅
+? regime | Quel régime alimentaire pour ma fille ? | végétarienne
+~ 6
+? budget | Quel était notre budget global ? | 3 800 euros
+? hotel | Comment s'appelle l'hôtel déjà ? | Casa Azul
+? depart | On part quel jour finalement ? | 10 mai
+? destination | Récapitulons : quelle destination ? | Porto
+? passeport | Il te reste mon passeport en mémoire ? | ∅

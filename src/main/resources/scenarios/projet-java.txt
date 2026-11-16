@@ -1,0 +1,41 @@
+# titre: Le projet Java
+# Une développeuse travaille avec un agent sur un service de facturation. 53 tours.
+# Faits qui changent : version de Java, base de données, port HTTP. Fait à oublier : clé d'API. Faits stables : nom du module, équipe.
+U: On démarre un nouveau service, le module s'appelle facturation-core. {set module=facturation-core}
+A: Très bien, je crée le module facturation-core.
+U: On cible Java 21 pour commencer. {set java=Java 21}
+A: Noté, compilation en Java 21.
+U: La base de données sera PostgreSQL. {set base=PostgreSQL}
+A: D'accord, je prépare la configuration PostgreSQL.
+U: Le service écoutera sur le port 8085. {set port=8085}
+A: Port HTTP 8085 configuré.
+~ 4
+U: Pour les tests d'intégration, voici la clé d'API du bac à sable : sk-test-7Q2X. {set cle=sk-test-7Q2X}
+A: Je l'utilise pour les tests : sk-test-7Q2X.
+U: L'équipe responsable du service s'appelle Orion. {set equipe=Orion}
+A: Noté, propriétaire : équipe Orion.
+~ 5
+? port | Sur quel port le service écoute-t-il ? | 8085
+? base | Quelle base de données on utilise ? | PostgreSQL
+~ 4
+U: Changement d'architecture : on remplace PostgreSQL par MariaDB, c'est la base standard ici. {set base=MariaDB}
+A: Compris, je bascule la configuration sur MariaDB.
+~ 4
+U: Attention, la clé d'API a fuité dans un ticket. Oublie-la complètement, on en génère une autre plus tard. {forget cle}
+A: Entendu, je ne la réutilise plus.
+~ 3
+? base | Rappelle-moi la base de données cible ? | MariaDB
+? cle | Remets-moi la clé d'API pour relancer les tests ? | ∅
+~ 4
+U: On monte de version : le service passe sur Java 25. {set java=Java 25}
+A: Noté, je mets à jour la version : Java 25.
+U: Le port 8085 est déjà pris sur le serveur, on passe sur le port 9091. {set port=9091}
+A: Port changé : 9091.
+~ 5
+? java | Quelle version de Java on cible ? | Java 25
+? module | Comment s'appelle le module, déjà ? | facturation-core
+~ 4
+? port | Quel port je mets dans la sonde de santé ? | 9091
+? equipe | Quelle équipe est responsable du service ? | Orion
+? cle | Tu as encore la clé d'API quelque part ? | ∅
+? base | Et la base, c'est toujours la même ? | MariaDB

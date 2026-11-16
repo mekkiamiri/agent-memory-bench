@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La mémoire de vos agents Java · banc d'essai</title>
+<meta name="description" content="Rejouez une conversation tour par tour et voyez ce qui reste en mémoire avec une fenêtre, un résumé, un journal d'événements ou une récupération.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Martian+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#121416;--paper:#e9e4d8;--amber:#ffb000;--muted:#a9a39a;--dim:#5b5f63;--line:#2a2e31;--red:#ff5a4f;--green:#7fd18b}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 72% 10%,#1c2023 0%,var(--bg) 60%) fixed;color:var(--paper);font:400 15px/1.6 'Martian Mono',monospace}
+main{max-width:1180px;margin:0 auto;padding:48px 22px 80px}
+.k{color:var(--amber);letter-spacing:.2em;text-transform:uppercase;font-size:12px}
+h1,h2,h3{font-family:'Instrument Serif',serif;font-weight:400;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(40px,7vw,78px);line-height:1}
+h2{font-size:clamp(28px,4vw,40px);margin:56px 0 14px}
+h3{font-size:24px;margin-bottom:8px}
+em{color:var(--amber);font-style:italic}
+a{color:var(--amber)}
+.muted{color:var(--muted)}
+.lead{font-size:17px;max-width:760px}
+.todo{border:1px dashed var(--amber);color:var(--amber);padding:2px 10px;display:inline-block;letter-spacing:.06em}
+.barre{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+button{font:inherit;color:var(--paper);background:#0b0c0d;border:1px solid var(--line);padding:9px 14px;cursor:pointer}
+button:hover{border-color:var(--dim)}
+button[aria-pressed="true"]{border-color:var(--amber);color:var(--amber)}
+button:disabled{opacity:.4;cursor:default}
+input[type=range]{width:100%;accent-color:var(--amber)}
+.grille{display:grid;grid-template-columns:1fr 1.25fr;gap:22px;margin-top:16px}
+@media (max-width:860px){.grille{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);background:#0e1011cc;padding:18px}
+.readouts{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0}
+.readouts div{border:1px solid var(--dim);padding:10px 14px;min-width:120px}
+.readouts b{display:block;font:500 26px 'Martian Mono';color:var(--amber)}
+.readouts span{font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.msg{border-left:3px solid var(--line);padding:6px 10px;margin:6px 0;white-space:pre-wrap;word-break:break-word}
+.msg .r{font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;display:block}
+.msg.system{border-color:var(--amber);background:rgba(255,176,0,.06)}
+.msg.courant{border-color:var(--paper)}
+mark{background:none;padding:0 2px;border-bottom:2px solid}
+mark.ok{color:var(--green);border-color:var(--green)}
+mark.perime{color:var(--red);border-color:var(--red)}
+.verdict{font-weight:500}
+.CORRECT{color:var(--green)}.PERIME{color:var(--red)}.MANQUE{color:var(--amber)}
+.fait{font-size:12px;color:var(--amber)}
+svg{width:100%;height:120px;display:block}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:400;text-transform:uppercase;letter-spacing:.08em;font-size:11px}
+footer{margin-top:60px;color:var(--muted);font-size:13px}
+#conforme b{color:var(--green)}
+#conforme.ko b{color:var(--red)}
+</style>
+</head>
+<body>
+<main>
+  <div class="k">Devoxx France 2027 · banc d'essai</div>
+  <h1 style="margin-top:14px">La mémoire de vos agents Java :<br><em>fenêtre, résumé ou journal d'événements ?</em></h1>
+  <p class="lead" style="margin-top:22px">Au tour 30, votre agent se souvient-il du budget que l'utilisateur a corrigé au tour 14 ? A-t-il bien oublié le numéro qu'on lui a demandé d'oublier ? Et combien de caractères envoie-t-il au modèle pour ça ?</p>
+  <p class="muted">Choisissez une stratégie, puis avancez tour par tour : vous voyez exactement ce qui part dans le prompt.</p>
+
+  <h2>Rejouer une conversation</h2>
+  <div class="barre" id="choix" role="group" aria-label="Stratégie de mémoire"></div>
+  <p class="muted" id="explication" style="max-width:860px;margin:0 0 10px"></p>
+  <div class="barre" style="align-items:center">
+    <button id="prec" aria-label="Tour précédent">◀ tour</button>
+    <button id="suiv" aria-label="Tour suivant">tour ▶</button>
+    <button id="question" aria-label="Question de rappel suivante">question suivante ▶▶</button>
+    <button id="lecture" aria-pressed="false">lecture auto</button>
+    <span class="muted" id="position" aria-live="polite"></span>
+  </div>
+  <input type="range" id="curseur" min="1" value="1" aria-label="Tour">
+
+  <div class="grille">
+    <section class="panel">
+      <div class="k">Le tour</div>
+      <div id="tour"></div>
+      <div class="readouts">
+        <div><b id="car">0</b><span>caractères envoyés</span></div>
+        <div><b id="tok">0</b><span>tokens estimés</span></div>
+        <div><b id="nb">0</b><span>messages</span></div>
+      </div>
+      <div class="k" style="margin-top:12px">Taille du prompt, tour par tour</div>
+      <svg id="courbe" viewBox="0 0 600 120" preserveAspectRatio="none" role="img" aria-label="Taille du prompt par tour"></svg>
+      <p class="muted" style="font-size:12px;margin:4px 0 0">ambre : stratégie choisie · gris : historique complet · points : questions de rappel</p>
+      <div id="etat" style="margin-top:14px"></div>
+    </section>
+    <section class="panel">
+      <div class="k">Ce que reçoit le modèle à ce tour</div>
+      <p class="muted" style="font-size:12px;margin:6px 0">vert : la bonne valeur · rouge : valeur périmée ou oubliée</p>
+      <div id="prompt"></div>
+    </section>
+  </div>
+
+  <h2>Les questions de rappel de ce scénario</h2>
+  <p class="muted">Répondues par un <b>faux modèle naïf</b> : il reprend la dernière valeur connue qu'il voit dans le prompt, et ne sait pas « oublier sur demande ». Il montre ce que la mémoire rend possible, pas ce que ferait un vrai modèle.</p>
+  <div style="overflow-x:auto"><table id="bilan"></table></div>
+
+  <h2>État</h2>
+  <ul>
+    <li>Le dépôt tourne : 4 stratégies maison, la session de Spring AI 2.1.0-RC2 branchée sur le même banc, 3 conversations de 34 à 71 tours, un noteur, des tests JUnit.</li>
+    <li id="conforme">Simulation de cette page comparée au banc Java : <b>vérification…</b></li>
+    <li>Résultats avec un vrai modèle (rappel, faits périmés, coût) : <span class="todo">à mesurer</span></li>
+    <li>La session Spring AI n'est pas simulée ici (code Java uniquement).</li>
+  </ul>
+  <p><a href="https://github.com/mekkiamiri/agent-memory-bench">Le dépôt</a> · <a href="slides/">Les slides</a> · <a href="https://github.com/mekkiamiri/agent-memory-bench/blob/main/PROTOCOLE.md">Le protocole</a></p>
+
+  <footer>Mekki Amiri · Apache-2.0 · aucun chiffre de résultat n'est affiché tant qu'il n'est pas mesuré.</footer>
+</main>
+
+<!-- Scénario d'exemple : copie exacte de src/main/resources/scenarios/demenagement.txt (vérifiée par PageTest) -->
+<script type="text/plain" id="scenario">
+# titre: Le déménagement
+# Une personne prépare un déménagement avec un assistant. 34 tours.
+# Faits qui changent : ville, budget, date. Fait à oublier : téléphone. Faits stables : étage, animal.
+U: Bonjour ! Je prépare mon déménagement, je pars m'installer à Lyon. {set ville=Lyon}
+A: Bonne nouvelle ! Je note : déménagement à Lyon.
+U: Le nouvel appartement est au troisième étage, sans ascenseur. {set etage=troisième étage}
+A: Noté : troisième étage sans ascenseur, il faudra prévoir des bras.
+U: Mon budget total pour le déménagement est de 1 200 euros. {set budget=1 200 euros}
+A: Budget noté : 1 200 euros.
+~ 3
+U: Le camion est réservé pour le 15 mars. {set date=15 mars}
+A: Parfait, déménagement prévu le 15 mars.
+U: J'ai aussi un chat, il s'appelle Pistache, il faudra penser à lui. {set animal=Pistache}
+A: Pistache voyagera dans sa caisse de transport, pensez à l'eau.
+U: Si le déménageur doit me joindre, mon numéro est le 06 12 34 56 78. {set telephone=06 12 34 56 78}
+A: Je garde le 06 12 34 56 78 pour le déménageur.
+~ 3
+? budget | Rappelle-moi mon budget pour le déménagement ? | 1 200 euros
+U: Mauvaise nouvelle, le devis a augmenté : mon budget passe à 1 450 euros. {set budget=1 450 euros}
+A: Budget mis à jour : 1 450 euros.
+~ 2
+U: Finalement je ne vais plus à Lyon, j'ai accepté le poste à Grenoble. {set ville=Grenoble}
+A: Changement noté : vous partez à Grenoble.
+U: Et oublie mon numéro de téléphone, je préfère ne pas le laisser traîner. {forget telephone}
+A: C'est entendu, je ne le garde plus.
+~ 3
+? ville | Dans quelle ville je déménage, déjà ? | Grenoble
+U: Le camion a été décalé au 22 mars, le 15 n'était plus possible. {set date=22 mars}
+A: Nouvelle date notée : 22 mars.
+~ 3
+? telephone | Tu peux me redonner mon numéro de téléphone ? | ∅
+? date | Quelle est la date du déménagement ? | 22 mars
+~ 2
+? etage | À quel étage est le nouvel appartement ? | troisième étage
+? budget | Et mon budget, il est de combien maintenant ? | 1 450 euros
+? animal | Comment s'appelle mon chat ? | Pistache
+? ville | On récapitule : je déménage dans quelle ville ? | Grenoble
+</script>
+
+<!-- Trace de référence produite par le banc Java (Banc.trace), vérifiée par PageTest -->
+<script type="application/json" id="trace-java">
+{"scenario":"demenagement","strategies":{
+"historique-complet":[[72,null],[199,null],[341,null],[452,null],[612,null],[759,null],[868,null],[992,null],[1140,null],[1247,null],[1379,null],[1516,null],[1671,"CORRECT"],[1780,null],[1879,null],[2031,null],[2230,null],[2362,null],[2480,null],[2644,null],[2771,null],[2900,"CORRECT"],[2997,null],[3098,null],[3256,null],[3416,null],[3565,"PERIME"],[3641,"CORRECT"],[3717,null],[3830,null],[3969,"CORRECT"],[4055,"CORRECT"],[4120,"CORRECT"],[4201,"CORRECT"]],
+"fenetre":[[72,null],[199,null],[341,null],[452,null],[612,null],[759,null],[868,null],[860,null],[862,null],[867,null],[814,null],[806,null],[847,"MANQUE"],[857,null],[809,null],[829,null],[887,null],[889,null],[858,null],[942,null],[946,null],[919,"CORRECT"],[841,null],[814,null],[846,null],[826,null],[831,"CORRECT"],[778,"CORRECT"],[783,null],[784,null],[779,"MANQUE"],[673,"MANQUE"],[590,"MANQUE"],[592,"MANQUE"]],
+"resume":[[72,null],[199,null],[341,null],[452,null],[612,null],[759,null],[868,null],[654,null],[802,null],[909,null],[1041,null],[786,null],[941,"CORRECT"],[1050,null],[1149,null],[819,null],[1018,null],[1150,null],[1268,null],[970,null],[1097,null],[1226,"CORRECT"],[1323,null],[992,null],[1150,null],[1310,null],[1459,"PERIME"],[1082,"CORRECT"],[1158,null],[1271,null],[1410,"CORRECT"],[1012,"CORRECT"],[1077,"CORRECT"],[1158,"CORRECT"]],
+"journal":[[72,null],[235,null],[403,null],[537,null],[697,null],[844,null],[953,null],[1094,null],[1262,null],[1398,null],[1530,null],[600,null],[755,"CORRECT"],[864,null],[963,null],[1115,null],[1314,null],[1450,null],[1407,null],[614,null],[741,null],[870,"CORRECT"],[967,null],[1068,null],[1226,null],[1386,null],[1535,"CORRECT"],[577,"CORRECT"],[653,null],[766,null],[905,"CORRECT"],[991,"CORRECT"],[1056,"CORRECT"],[1137,"CORRECT"]],
+"recuperation":[[72,null],[199,null],[341,null],[452,null],[480,null],[481,null],[488,null],[505,null],[430,null],[423,null],[459,null],[449,null],[684,"CORRECT"],[693,null],[459,null],[412,null],[660,null],[611,null],[499,null],[488,null],[527,null],[530,"MANQUE"],[503,null],[542,null],[584,null],[536,null],[678,"PERIME"],[667,"CORRECT"],[512,null],[365,null],[516,"CORRECT"],[601,"CORRECT"],[575,"CORRECT"],[322,"MANQUE"]]
+}}
+</script>
+
+<script>
+"use strict";
+/* Portage fidèle des classes Java du dépôt (mêmes réglages que Strategies.java). */
+const REGLAGES = {FENETRE_MESSAGES:12, RESUME_SEUIL:12, RESUME_GARDES:6, RESUME_BUDGET:600, JOURNAL_DECLENCHEUR:10, JOURNAL_GARDES:3, RECUP_RECENTS:6, RECUP_NOMBRE:4};
+
+const BAVARDAGE = [
+  ["Au fait, quelle différence entre un café allongé et un americano ?", "L'allongé fait passer plus d'eau dans la mouture ; l'americano ajoute de l'eau chaude à un espresso."],
+  ["Tu connais une astuce pour mieux dormir ?", "Des horaires réguliers, une chambre fraîche et moins d'écrans le soir aident souvent."],
+  ["Comment on dit « bon courage » en italien ?", "On dit « in bocca al lupo », et on répond « crepi »."],
+  ["Une idée de lecture courte pour le train ?", "Une nouvelle de Maupassant ou un recueil de chroniques se lit bien par morceaux."],
+  ["Pourquoi le ciel est bleu, déjà ?", "La lumière bleue est davantage diffusée par l'atmosphère que la lumière rouge."],
+  ["Tu peux m'expliquer ce qu'est un haïku ?", "Un poème japonais très bref, traditionnellement en trois segments, souvent sur une saison."],
+  ["Comment garder du basilic frais plus longtemps ?", "Dans un verre d'eau comme un bouquet, à température ambiante, plutôt qu'au réfrigérateur."],
+  ["C'est quoi la règle du hors-jeu, en résumé ?", "Un attaquant est hors-jeu s'il est plus près du but adverse que l'avant-dernier défenseur au moment de la passe."],
+  ["Quelle est la meilleure façon d'apprendre un raccourci clavier ?", "L'utiliser volontairement chaque jour pendant une semaine, jusqu'à ce qu'il devienne automatique."],
+  ["Tu as une recette rapide avec des pois chiches ?", "Un houmous : pois chiches, tahini, citron, ail, un filet d'huile, et on mixe."],
+  ["Pourquoi les chats ronronnent ?", "Souvent par bien-être, mais aussi pour s'apaiser quand ils sont stressés."],
+  ["Comment retirer une tache de café sur un tee-shirt ?", "Rincer à l'eau froide par l'envers, puis un peu de savon avant le lavage."]
+];
+
+/* ---------- LecteurScenario ---------- */
+function lireScenario(source) {
+  const ANNOT = /\{(set|forget) ([^}=]+?)(?:=([^}]*))?\}/g;
+  const tours = [], historique = new Map(), oublie = new Map();
+  let titre = "", rang = 0;
+  const lignes = source.split("\n");
+  for (let i = 0; i < lignes.length; i++) {
+    const l = lignes[i].trim();
+    if (!l) continue;
+    if (l.startsWith("#")) { if (l.startsWith("# titre:")) titre = l.slice(8).trim(); continue; }
+    if (l.startsWith("U:")) {
+      const brut = l.slice(2).trim(), faits = [];
+      for (const m of brut.matchAll(ANNOT)) {
+        const cle = m[2].trim();
+        if (m[1] === "set") {
+          const v = (m[3] || "").trim();
+          faits.push({cle, valeur: v});
+          if (!historique.has(cle)) historique.set(cle, []);
+          historique.get(cle).push(v); oublie.set(cle, false);
+        } else { faits.push({cle, valeur: null}); oublie.set(cle, true); }
+      }
+      const texte = brut.replace(ANNOT, "").trim().replace(/ {2,}/g, " ");
+      const reponse = lignes[++i].trim().slice(2).trim();
+      tours.push({numero: tours.length + 1, utilisateur: texte, faits, reponse, sonde: null, bavardage: false});
+    } else if (l.startsWith("~")) {
+      const n = parseInt(l.slice(1).trim(), 10);
+      for (let k = 0; k < n; k++) {
+        const p = BAVARDAGE[rang++ % BAVARDAGE.length];
+        tours.push({numero: tours.length + 1, utilisateur: p[0], faits: [], reponse: p[1], sonde: null, bavardage: true});
+      }
+    } else if (l.startsWith("?")) {
+      const [cle, question] = l.slice(1).split("|").map(s => s.trim());
+      const valeurs = historique.get(cle), estOublie = oublie.get(cle);
+      const attendu = estOublie ? null : valeurs[valeurs.length - 1];
+      const perimees = estOublie ? valeurs.slice() : valeurs.slice(0, -1);
+      tours.push({numero: tours.length + 1, utilisateur: question, faits: [], reponse: null, sonde: {cle, attendu, perimees}, bavardage: false});
+    }
+  }
+  return {titre, tours};
+}
+
+/* ---------- Message, Contexte ---------- */
+const ROLE = {UTILISATEUR: "user", ASSISTANT: "assistant", SYSTEME: "system"};
+const msg = (role, texte, faits = []) => ({role, texte, faits});
+const ligne = m => m.role + ": " + m.texte;
+const texteContexte = ms => ms.map(ligne).join("\n");
+
+/* ---------- Stratégies ---------- */
+class HistoriqueComplet {
+  constructor() { this.nom = "historique-complet"; this.messages = []; }
+  enregistrer(m) { this.messages.push(m); }
+  contexte() { return this.messages.slice(); }
+  etat() { return `${this.messages.length} messages gardés, tous envoyés.`; }
+}
+class FenetreGlissante {
+  constructor(max) { this.nom = "fenetre"; this.max = max; this.messages = []; }
+  enregistrer(m) { this.messages.push(m); }
+  contexte() { return this.messages.slice(Math.max(0, this.messages.length - this.max)); }
+  etat() { return `${this.messages.length} messages vus ; seuls les ${this.max} derniers partent.`; }
+}
+class ResumeurCumulatif {
+  constructor(budget) { this.budget = budget; }
+  resumer(precedent, sortants) {
+    const e = precedent ? precedent.split(" | ") : [];
+    for (const m of sortants) if (m.role === ROLE.UTILISATEUR && m.faits.length) e.push(m.texte);
+    while (e.length > 1 && e.join(" | ").length > this.budget) e.shift();
+    return e.join(" | ");
+  }
+}
+class Resume {
+  constructor(seuil, gardes, resumeur) { this.nom = "resume"; this.seuil = seuil; this.gardes = gardes; this.resumeur = resumeur; this.tampon = []; this.resume = ""; this.compactions = 0; }
+  enregistrer(m) {
+    this.tampon.push(m);
+    if (m.role === ROLE.ASSISTANT && this.tampon.length > this.seuil) {
+      const coupe = this.tampon.length - this.gardes;
+      this.resume = this.resumeur.resumer(this.resume, this.tampon.slice(0, coupe));
+      this.tampon = this.tampon.slice(coupe); this.compactions++;
+    }
+  }
+  contexte() { return (this.resume ? [msg(ROLE.SYSTEME, "Résumé de la conversation : " + this.resume)] : []).concat(this.tampon); }
+  etat() { return `${this.compactions} résumé(s) produit(s) ; ${this.tampon.length} messages gardés tels quels.`; }
+}
+class JournalEvenements {
+  constructor(declencheur, gardes) { this.nom = "journal"; this.declencheur = declencheur; this.gardes = gardes; this.journal = []; this.messages = []; this.premierVisible = 0; }
+  enregistrer(m) {
+    this.journal.push({type: "MessageAjoute", m}); this.messages.push(m);
+    for (const f of m.faits) this.journal.push(f.valeur === null ? {type: "FaitOublie", cle: f.cle} : {type: "FaitPose", cle: f.cle, valeur: f.valeur});
+    if (m.role === ROLE.ASSISTANT && this.toursVisibles() > this.declencheur) {
+      this.premierVisible = this.debutDesDerniersTours(this.gardes);
+      this.journal.push({type: "Frontiere", premierMessageVisible: this.premierVisible});
+    }
+  }
+  etatFaits() {
+    const etat = new Map();
+    for (const e of this.journal) {
+      if (e.type === "FaitPose") { etat.delete(e.cle); etat.set(e.cle, e.valeur); }
+      else if (e.type === "FaitOublie") etat.delete(e.cle);
+    }
+    return etat;
+  }
+  valeursOubliees() {
+    const valeurs = new Map(), oubliees = new Set();
+    for (const e of this.journal) {
+      if (e.type === "FaitPose") { if (!valeurs.has(e.cle)) valeurs.set(e.cle, []); valeurs.get(e.cle).push(e.valeur); oubliees.delete(e.cle); }
+      else if (e.type === "FaitOublie") oubliees.add(e.cle);
+    }
+    const r = new Set();
+    for (const c of oubliees) for (const v of (valeurs.get(c) || [])) r.add(v);
+    return r;
+  }
+  contexte() {
+    const etat = this.etatFaits(), oubliees = [...this.valeursOubliees()], vue = [];
+    if (etat.size) vue.push(msg(ROLE.SYSTEME, "Faits connus : " + [...etat].map(([k, v]) => k + " = " + v).join(" ; ")));
+    for (const m of this.messages.slice(this.premierVisible)) if (!oubliees.some(v => m.texte.includes(v))) vue.push(m);
+    return vue;
+  }
+  toursVisibles() { let n = 0; for (let i = this.premierVisible; i < this.messages.length; i++) if (this.messages[i].role === ROLE.UTILISATEUR) n++; return n; }
+  debutDesDerniersTours(t) {
+    let vus = 0;
+    for (let i = this.messages.length - 1; i >= this.premierVisible; i--) if (this.messages[i].role === ROLE.UTILISATEUR && ++vus === t) return i;
+    return this.premierVisible;
+  }
+  etat() {
+    const fr = this.journal.filter(e => e.type === "Frontiere").length;
+    return `${this.journal.length} événements dans le journal (jamais réécrit) ; ${fr} frontière(s) de compaction ; vue à partir du message ${this.premierVisible + 1}.`;
+  }
+}
+const MOTS_VIDES = new Set(["pour","dans","avec","mais","plus","tout","bien","fait","faire","cette","sont","nous","vous","elle","quoi","quel","quelle","quels","quelles","comme","alors","donc","aussi","encore","juste","très","moins","peux","veux"]);
+function mots(t) { const s = new Set(); for (const m of t.toLowerCase().split(/[^\p{L}\p{N}]+/u)) if (m.length >= 4 && !MOTS_VIDES.has(m)) s.add(m); return s; }
+class Recuperation {
+  constructor(recents, nombre) { this.nom = "recuperation"; this.recents = recents; this.nombre = nombre; this.messages = []; this.derniers = []; }
+  enregistrer(m) { this.messages.push(m); }
+  contexte(requete) {
+    const debut = Math.max(0, this.messages.length - this.recents), mr = mots(requete), cands = [];
+    for (let i = 0; i < debut; i++) {
+      const mt = mots(this.messages[i].texte); let s = 0;
+      for (const w of mr) if (mt.has(w)) s++;
+      if (s > 0) cands.push({pos: i, score: s});
+    }
+    cands.sort((a, b) => (b.score - a.score) || (b.pos - a.pos));
+    const retenus = cands.slice(0, this.nombre).map(c => c.pos).sort((a, b) => a - b);
+    this.derniers = retenus;
+    return retenus.map(p => this.messages[p]).concat(this.messages.slice(debut));
+  }
+  etat() { return `${this.messages.length} messages indexés ; derniers récupérés : ${this.derniers.length ? this.derniers.map(p => "n°" + (p + 1)).join(", ") : "aucun"}.`; }
+}
+
+const STRATEGIES = {
+  "historique-complet": {libelle: "historique complet", creer: () => new HistoriqueComplet(),
+    expl: "Référence : tout l'historique part à chaque tour. Rien ne se perd, tout se paie."},
+  "fenetre": {libelle: "fenêtre", creer: () => new FenetreGlissante(REGLAGES.FENETRE_MESSAGES),
+    expl: "Les 12 derniers messages (6 tours). C'est ce que fait MessageWindowChatMemory, déclarée obsolète dans Spring AI 2.1."},
+  "resume": {libelle: "résumé", creer: () => new Resume(REGLAGES.RESUME_SEUIL, REGLAGES.RESUME_GARDES, new ResumeurCumulatif(REGLAGES.RESUME_BUDGET)),
+    expl: "Au-delà de 12 messages, les plus anciens sont résumés, les 6 derniers restent. Ici, un faux résumeur qui accumule les phrases porteuses de faits sans résoudre les contradictions (600 caractères max)."},
+  "journal": {libelle: "journal d'événements", creer: () => new JournalEvenements(REGLAGES.JOURNAL_DECLENCHEUR, REGLAGES.JOURNAL_GARDES),
+    expl: "Tout est ajouté au journal (messages, faits posés, faits oubliés). Au-delà de 10 tours, une frontière ne garde que les 3 derniers ; l'état des faits est rejoué depuis tout le journal. Il reçoit les faits structurés : en vrai, il faut un extracteur, dont le coût est à mesurer."},
+  "recuperation": {libelle: "récupération", creer: () => new Recuperation(REGLAGES.RECUP_RECENTS, REGLAGES.RECUP_NOMBRE),
+    expl: "Les 6 derniers messages, plus les 4 anciens messages qui partagent le plus de mots avec la question (proximité lexicale ; des embeddings en vrai)."}
+};
+
+/* ---------- LecteurNaif, Noteur, Banc ---------- */
+function repondre(prompt, sonde) {
+  const t = texteContexte(prompt.slice(0, Math.max(0, prompt.length - 1)));
+  let meilleure = null, pos = -1;
+  for (const v of sonde.perimees.concat(sonde.attendu === null ? [] : [sonde.attendu])) {
+    const p = t.lastIndexOf(v); if (p > pos) { pos = p; meilleure = v; }
+  }
+  return meilleure === null ? "Je ne sais pas." : "C'est " + meilleure + ".";
+}
+function verdict(sonde, reponse) {
+  if (sonde.perimees.some(v => reponse.includes(v))) return "PERIME";
+  if (sonde.attendu === null) return "CORRECT";
+  return reponse.includes(sonde.attendu) ? "CORRECT" : "MANQUE";
+}
+function jouer(scenario, cle) {
+  const s = STRATEGIES[cle].creer(), mesures = [];
+  for (const t of scenario.tours) {
+    const q = msg(ROLE.UTILISATEUR, t.utilisateur, t.faits);
+    const prompt = s.contexte(t.utilisateur).concat([q]);
+    let reponse = t.reponse, v = null;
+    if (t.sonde) { reponse = repondre(prompt, t.sonde); v = verdict(t.sonde, reponse); }
+    mesures.push({tour: t, prompt, caracteres: texteContexte(prompt).length, verdict: v, reponse, etat: null});
+    s.enregistrer(q); s.enregistrer(msg(ROLE.ASSISTANT, reponse));
+    mesures[mesures.length - 1].etat = s.etat();
+  }
+  return mesures;
+}
+
+/* ---------- Interface ---------- */
+const scenario = lireScenario(document.getElementById("scenario").textContent);
+const runs = {}; for (const k in STRATEGIES) runs[k] = jouer(scenario, k);
+let choix = "journal", tour = 1, minuterie = null;
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const LIBELLE_VERDICT = {CORRECT: "correct", PERIME: "périmé ressorti", MANQUE: "manqué"};
+
+function surligner(texte, sonde) {
+  let h = esc(texte);
+  if (!sonde) return h;
+  const marques = sonde.perimees.map(v => [v, "perime"]);
+  if (sonde.attendu !== null) marques.push([sonde.attendu, "ok"]);
+  for (const [v, c] of marques) h = h.split(esc(v)).join(`<mark class="${c}">${esc(v)}</mark>`);
+  return h;
+}
+
+function dessinerCourbe() {
+  const ref = runs["historique-complet"], cur = runs[choix], max = Math.max(...ref.map(m => m.caracteres));
+  const x = i => (i / (ref.length - 1)) * 596 + 2, y = c => 116 - (c / max) * 110;
+  const chemin = r => r.map((m, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(m.caracteres).toFixed(1)).join(" ");
+  let svg = `<path d="${chemin(ref)}" fill="none" stroke="#5b5f63" stroke-width="1.5"/>`;
+  svg += `<path d="${chemin(cur)}" fill="none" stroke="#ffb000" stroke-width="2"/>`;
+  cur.forEach((m, i) => { if (m.verdict) svg += `<circle cx="${x(i)}" cy="${y(m.caracteres)}" r="3.5" fill="${m.verdict === "CORRECT" ? "#7fd18b" : m.verdict === "PERIME" ? "#ff5a4f" : "#ffb000"}"/>`; });
+  svg += `<line x1="${x(tour - 1)}" x2="${x(tour - 1)}" y1="0" y2="120" stroke="#e9e4d8" stroke-dasharray="3 3"/>`;
+  $("courbe").innerHTML = svg;
+}
+
+function afficher() {
+  const m = runs[choix][tour - 1], t = m.tour;
+  $("curseur").value = tour;
+  $("position").textContent = `tour ${tour} / ${scenario.tours.length}`;
+  $("prec").disabled = tour === 1; $("suiv").disabled = tour === scenario.tours.length;
+  let h = `<div class="msg courant"><span class="r">utilisateur</span>${surligner(t.utilisateur, t.sonde)}</div>`;
+  for (const f of t.faits) h += `<div class="fait">${f.valeur === null ? "fait à oublier : " + esc(f.cle) : "fait posé : " + esc(f.cle) + " = " + esc(f.valeur)}</div>`;
+  h += `<div class="msg"><span class="r">assistant${t.sonde ? " (faux modèle)" : ""}</span>${surligner(m.reponse, t.sonde)}</div>`;
+  if (t.sonde) {
+    h += `<p>Question de rappel sur <b>${esc(t.sonde.cle)}</b> · attendu : <b>${t.sonde.attendu === null ? "rien (fait oublié)" : esc(t.sonde.attendu)}</b><br>verdict : <span class="verdict ${m.verdict}">${LIBELLE_VERDICT[m.verdict]}</span></p>`;
+  } else if (t.bavardage) h += `<p class="muted" style="font-size:12px">tour de bavardage, sans fait à retenir</p>`;
+  $("tour").innerHTML = h;
+  $("car").textContent = m.caracteres.toLocaleString("fr-FR");
+  $("tok").textContent = Math.ceil(m.caracteres / 4).toLocaleString("fr-FR");
+  $("nb").textContent = m.prompt.length;
+  $("etat").innerHTML = `<div class="k">Mémoire après ce tour</div><p class="muted" style="margin:6px 0 0">${esc(m.etat)}</p>`;
+  $("prompt").innerHTML = m.prompt.map((p, i) => `<div class="msg ${p.role}${i === m.prompt.length - 1 ? " courant" : ""}"><span class="r">${p.role}${i === m.prompt.length - 1 ? " · message courant" : ""}</span>${surligner(p.texte, t.sonde)}</div>`).join("");
+  dessinerCourbe();
+}
+
+function bilan() {
+  const qs = scenario.tours.filter(t => t.sonde);
+  let h = `<tr><th>Tour</th><th>Question</th><th>Attendu</th>${Object.keys(STRATEGIES).map(k => `<th>${STRATEGIES[k].libelle}</th>`).join("")}</tr>`;
+  for (const t of qs) {
+    h += `<tr><td>${t.numero}</td><td>${esc(t.utilisateur)}</td><td>${t.sonde.attendu === null ? "∅ (oublié)" : esc(t.sonde.attendu)}</td>`;
+    for (const k in STRATEGIES) { const v = runs[k][t.numero - 1].verdict; h += `<td class="${v}">${LIBELLE_VERDICT[v]}</td>`; }
+    h += "</tr>";
+  }
+  $("bilan").innerHTML = h;
+}
+
+function verifierConformite() {
+  let ok = true, n = 0;
+  try {
+    const ref = JSON.parse(document.getElementById("trace-java").textContent).strategies;
+    for (const k in STRATEGIES) {
+      runs[k].forEach((m, i) => { n++; const r = ref[k][i]; if (!r || r[0] !== m.caracteres || r[1] !== m.verdict) ok = false; });
+    }
+  } catch (e) { ok = false; }
+  $("conforme").innerHTML = ok
+    ? `Simulation de cette page comparée au banc Java : <b>identique</b> (taille du prompt et verdict sur ${n} tours × stratégies)`
+    : `Simulation de cette page comparée au banc Java : <b>écart détecté</b>, à corriger`;
+  if (!ok) $("conforme").classList.add("ko");
+}
+
+function choisir(k) {
+  choix = k;
+  for (const b of $("choix").children) b.setAttribute("aria-pressed", String(b.dataset.k === k));
+  $("explication").textContent = STRATEGIES[k].expl;
+  afficher();
+}
+for (const k in STRATEGIES) {
+  const b = document.createElement("button"); b.textContent = STRATEGIES[k].libelle; b.dataset.k = k;
+  b.addEventListener("click", () => choisir(k)); $("choix").appendChild(b);
+}
+$("curseur").max = scenario.tours.length;
+$("curseur").addEventListener("input", e => { tour = +e.target.value; afficher(); });
+$("prec").addEventListener("click", () => { if (tour > 1) { tour--; afficher(); } });
+$("suiv").addEventListener("click", () => { if (tour < scenario.tours.length) { tour++; afficher(); } });
+$("question").addEventListener("click", () => {
+  const suivante = scenario.tours.find(t => t.sonde && t.numero > tour);
+  tour = suivante ? suivante.numero : scenario.tours.find(t => t.sonde).numero; afficher();
+});
+$("lecture").addEventListener("click", () => {
+  if (minuterie) { clearInterval(minuterie); minuterie = null; $("lecture").setAttribute("aria-pressed", "false"); return; }
+  $("lecture").setAttribute("aria-pressed", "true");
+  minuterie = setInterval(() => { if (tour >= scenario.tours.length) { clearInterval(minuterie); minuterie = null; $("lecture").setAttribute("aria-pressed", "false"); return; } tour++; afficher(); }, 900);
+});
+document.addEventListener("keydown", e => { if (e.key === "ArrowRight") $("suiv").click(); if (e.key === "ArrowLeft") $("prec").click(); });
+bilan(); verifierConformite(); choisir(choix);
+</script>
+</body>
+</html>
